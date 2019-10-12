@@ -1,0 +1,13 @@
+GetModuleHandle64       00000000100011A0 1 
+GetProcAddress64        0000000010001A10 2 
+GetThreadContext64      0000000010002030 3 
+ReadProcessMemory64     0000000010001E50 4 
+SetLastErrorFromX64Call 00000000100019A0 5 
+SetThreadContext64      00000000100020E0 6 
+VirtualAllocEx64        0000000010001BA0 7 
+VirtualFreeEx64         0000000010001C90 8 
+VirtualProtectEx64      0000000010001D70 9 
+VirtualQueryEx64        0000000010001AD0 10
+WriteProcessMemory64    0000000010001F40 11
+X64Call                 0000000010001030 12
+DllMain                 0000000010001000   
