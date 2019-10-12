@@ -68,6 +68,11 @@ void AllocTest(HANDLE hProcess)
 #include "PstrConverter.h"
 int main (int argc, char* argv[])
 {
+	DWORD64 kernel32 = GetModuleHandle64(L"kernel32.dll");
+	printf("kernel32: %016I64X\n", kernel32);
+	DWORD64 loadLib = GetProcAddress64(kernel32, "LoadLibraryW");
+	printf("LoadLibraryW address: %016I64X\n", loadLib);
+
 #if 0
 	DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
 		"TurboDispatchJumpAddressStart");
