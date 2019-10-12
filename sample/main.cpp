@@ -65,6 +65,7 @@ void AllocTest(HANDLE hProcess)
 }
 
 #include "ProcessManager.h"
+#include "PstrConverter.h"
 int main (int argc, char* argv[])
 {
 	DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
@@ -74,20 +75,18 @@ int main (int argc, char* argv[])
 	DWORD procID = 0;
 	if (2 == argc)
 	{
-		if (1 != sscanf_s(argv[1], "%d", &procID))
+		PSTR pStr = argv[1];
+		PTSTR ptStr = ConvertSTRtoTSTR(pStr);
+		procID = GetProcessID(ptStr, _tcslen(ptStr));
+		if (0 == procID)
 		{
-			printf("Invalid process ID.\n");
+			printf("Invalid process name.\n");
 			return 0;
 		}
 	}
-	if (0 == procID)
+	else
 	{
-		PCTSTR pName = TEXT("win32calc.exe");
-		procID = GetProcessID(pName, _tcsclen(pName));
-	}
-	if (0 == procID)
-	{
-		printf("Usage:\n\t%s process_ID\n", argv[0]);
+		printf("Usage:\n\t%s process_Name\n", argv[0]);
 		return 0;
 	}
 

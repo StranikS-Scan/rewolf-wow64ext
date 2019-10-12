@@ -17,9 +17,15 @@
     <ClCompile Include="ProcessManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="PstrConverter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ProcessManager.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="PstrConverter.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
