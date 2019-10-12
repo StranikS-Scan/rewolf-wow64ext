@@ -5,7 +5,7 @@ PSTR ConvertWSTRtoSTR(PCWSTR pStrIn)
 	LPSTR pStrOut = NULL;
 	if (pStrIn != NULL)
 	{
-		int nInputStrLen = wcslen(pStrIn);
+		int nInputStrLen = (int)wcslen(pStrIn);
 		// Double NULL Termination
 		int nOutputStrLen = WideCharToMultiByte(CP_ACP, 0, 
 			pStrIn, nInputStrLen, NULL, 0, 0, 0) + 1;
@@ -25,7 +25,7 @@ PWSTR ConvertSTRtoWSTR(PCSTR pStrIn)
 	LPWSTR pStrOut = NULL;
 	if (pStrIn != NULL)
 	{
-		int nInputStrLen = strlen(pStrIn);
+		int nInputStrLen = (int)strlen(pStrIn);
 		int nOutputStrLen = MultiByteToWideChar(CP_ACP, 0,
 			pStrIn, nInputStrLen, NULL, 0) + 1;
 		pStrOut = new WCHAR[nOutputStrLen];
@@ -42,7 +42,7 @@ PWSTR ConvertSTRtoWSTR(PCSTR pStrIn)
 PSTR CopySTR(PCSTR pStrIn)
 {
 	PSTR pStrOut = NULL;
-	int nInputStrLen = strlen(pStrIn);
+	int nInputStrLen = (int)strlen(pStrIn);
 	int nOutputStrLen = nInputStrLen + 1;
 	pStrOut = new CHAR[nOutputStrLen];
 	if (pStrOut)

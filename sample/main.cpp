@@ -10,7 +10,7 @@
 void AllocTest(HANDLE hProcess)
 {
     static const size_t TEST_SIZE = 0x2000;
-    printf("Requesting 0x%08X bytes of memory at 0x70000020000 ...\n", TEST_SIZE);
+    printf("Requesting 0x%zx bytes of memory at 0x70000020000 ...\n", TEST_SIZE);
     DWORD64 mem = VirtualAllocEx64(hProcess, 0x70000020000, TEST_SIZE, 
 		MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (0 == mem)
@@ -68,6 +68,7 @@ void AllocTest(HANDLE hProcess)
 #include "PstrConverter.h"
 int main (int argc, char* argv[])
 {
+#if 0
 	DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
 		"TurboDispatchJumpAddressStart");
 	printf("tt: %016I64X\n", s);
@@ -151,6 +152,7 @@ int main (int argc, char* argv[])
 				mbi64.RegionSize, mbi64.Protect);
         crAddr = crAddr + mbi64.RegionSize;
     }
+#endif
 
     DWORD64 ntdll64 = GetModuleHandle64(L"ntdll.dll");
     printf("\nNTDLL64: %016I64X\n\n", ntdll64);
@@ -164,6 +166,7 @@ int main (int argc, char* argv[])
         printf("CRC32(\"ReWolf\") = %016I64X\n\n", ret);
     }
 
+#if 0
     printf("Alloc/Protect/Write/Free test:\n");
     AllocTest(hProcess);
     
@@ -171,6 +174,7 @@ int main (int argc, char* argv[])
     AllocTest(GetCurrentProcess());
     
     printf("\n\nGet/Set Context test:\n");
+#endif
 
     _CONTEXT64 ctx = { 0 };
     ctx.ContextFlags = CONTEXT64_ALL;
@@ -187,6 +191,6 @@ int main (int argc, char* argv[])
     //ctx.Rip = 0;
     //SetThreadContext64(GetCurrentThread(), &ctx);
 
-    CloseHandle(hProcess);
+    //CloseHandle(hProcess);
     return 0;
 }
