@@ -64,24 +64,32 @@ void AllocTest(HANDLE hProcess)
 		mbi64.BaseAddress, mbi64.RegionSize, mbi64.Protect, mbi64.Type, mbi64.State);
 }
 
+#include "ProcessManager.h"
 int main (int argc, char* argv[])
 {
-    DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
+	DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
 		"TurboDispatchJumpAddressStart");
-    printf("tt: %016I64X\n", s);
+	printf("tt: %016I64X\n", s);
 
-    if (2 != argc)
-    {
-        printf("Usage:\n\t%s hex_process_ID\n", argv[0]);
-        return 0;
-    }
-
-    DWORD procID = 0;
-    if (1 != sscanf_s(argv[1], "%X", &procID))
-    {
-        printf("Invalid process ID.\n");
-        return 0;
-    }
+	DWORD procID = 0;
+	if (2 == argc)
+	{
+		if (1 != sscanf_s(argv[1], "%d", &procID))
+		{
+			printf("Invalid process ID.\n");
+			return 0;
+		}
+	}
+	if (0 == procID)
+	{
+		PCTSTR pName = TEXT("win32calc.exe");
+		procID = GetProcessID(pName, _tcsclen(pName));
+	}
+	if (0 == procID)
+	{
+		printf("Usage:\n\t%s process_ID\n", argv[0]);
+		return 0;
+	}
 
     printf("Process ID: %08X\n", procID);
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, procID);
