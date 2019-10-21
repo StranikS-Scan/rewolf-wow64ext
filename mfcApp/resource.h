@@ -25,7 +25,7 @@
 #define IDC_BTN_GET_SYS_DIR             1014
 #define IDC_BTN_LOAD_DLL                1015
 #define IDC_BTN_LOAD_DLL2               1016
-#define IDC_BTN_FILE2ARRAY              1017
+#define IDC_BTN_INJECT_DLL64            1017
 #define IDC_BTN_START_EXE2              1018
 
 // Next default values for new objects

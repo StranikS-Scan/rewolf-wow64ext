@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\mfcApp.rc2""  // 闈?Microsoft Visual C++ 缂栬緫鐨勮祫婧?\n"
-    "#include ""l.CHS\\afxres.rc""      // 鏍囧噯缁勪欢\r\n"
+    "#include ""res\\mfcApp.rc2""  // 闂?Microsoft Visual C++ 缂傛牞绶惃鍕カ濠?\n"
+    "#include ""l.CHS\\afxres.rc""      // 閺嶅洤鍣紒鍕\r\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 鍔熻兘鍖哄拰鎺у埗鏉¤祫婧?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 閸旂喕鍏橀崠鍝勬嫲閹貉冨煑閺壜ょカ濠?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -108,6 +108,7 @@ BEGIN
     PUSHBUTTON      "加载DLL文件",IDC_BTN_LOAD_DLL,92,53,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "运行EXE文件2",IDC_BTN_START_EXE2,92,101,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "加载DLL内存",IDC_BTN_LOAD_DLL2,151,53,50,14,BS_CENTER | WS_GROUP
+    PUSHBUTTON      "远程注入64",IDC_BTN_INJECT_DLL64,213,53,50,14,BS_CENTER | WS_GROUP
 END
 
 

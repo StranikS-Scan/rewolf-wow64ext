@@ -66,6 +66,7 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_START_EXE, &CmfcAppDlg::OnBnClickedBtnStartExe)
 	ON_BN_CLICKED(IDC_BTN_START_EXE2, &CmfcAppDlg::OnBnClickedBtnStartExe2)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL2, &CmfcAppDlg::OnBnClickedBtnLoadDll2)
+	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64, &CmfcAppDlg::OnBnClickedBtnInjectDll64)
 END_MESSAGE_MAP()
 
 #ifdef _DEBUG
@@ -293,8 +294,11 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll()
 #include "loader.h"
 void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 {//内存加载
+	char* buf = NULL;
 	string fileName = getFileName();
-	m_bRet = LoadLocalDll(fileName.c_str());
+	int len = readFile(fileName, buf);
+	//m_bRet = LoadLocalDll(fileName.c_str());
+	m_bRet = LoadLocalData(buf, len);
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
@@ -305,4 +309,13 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
 		::MessageBox(NULL, str.GetString(), TEXT("加载DLL"), MB_OK);
 	}
+	if (buf != NULL)
+	{
+		delete[]buf;
+	}
+}
+
+void CmfcAppDlg::OnBnClickedBtnInjectDll64()
+{
+	// TODO: 在此添加控件通知处理程序代码
 }
