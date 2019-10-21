@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_LOAD_LIB, &CmfcAppDlg::OnBnClickedBtnLoadLib)
 	ON_BN_CLICKED(IDC_BTN_START_EXE, &CmfcAppDlg::OnBnClickedBtnStartExe)
 	ON_BN_CLICKED(IDC_BTN_START_EXE2, &CmfcAppDlg::OnBnClickedBtnStartExe2)
+	ON_BN_CLICKED(IDC_BTN_LOAD_DLL2, &CmfcAppDlg::OnBnClickedBtnLoadDll2)
 END_MESSAGE_MAP()
 
 #ifdef _DEBUG
@@ -274,7 +275,7 @@ void CmfcAppDlg::OnBnClickedBtnRunExe()
 void CmfcAppDlg::OnBnClickedBtnLoadDll()
 {//regsvr32 /s *.dll
 	string fileName = getFileName();
-	//m_bRet = loadDllFromFile(fileName);
+	m_bRet = loadDllFromFile(fileName);
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
@@ -287,3 +288,19 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll()
 	}
 }
 
+#include "loader.h"
+void CmfcAppDlg::OnBnClickedBtnLoadDll2()
+{//内存加载
+	string fileName = getFileName();
+	m_bRet = LoadLocalDll(fileName.c_str());
+	if (m_bRet > 0)
+	{
+		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
+	}
+	else
+	{
+		CString str;
+		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
+		::MessageBox(NULL, str.GetString(), TEXT("加载DLL"), MB_OK);
+	}
+}

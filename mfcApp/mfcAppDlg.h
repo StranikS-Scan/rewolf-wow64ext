@@ -48,4 +48,5 @@ public:
 	afx_msg void OnBnClickedBtnFile2array();
 	afx_msg void OnBnClickedBtnRemoveExe();
 	afx_msg void OnBnClickedBtnStartExe2();
+	afx_msg void OnBnClickedBtnLoadDll2();
 };
