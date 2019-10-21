@@ -316,6 +316,26 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 }
 
 void CmfcAppDlg::OnBnClickedBtnInjectDll64()
-{
-	// TODO: 在此添加控件通知处理程序代码
+{//远程注入，64位注入64位
+	char* buf = NULL;
+	string fileName = getFileName();
+	int len = readFile(fileName, buf);
+	CString str;
+	GetDlgItemText(IDC_EDIT_PROC_ID, str);
+	DWORD pid = _ttoi(str);
+	m_bRet = LoadRemoteDataX64ByX64(buf, len, pid);
+	if (m_bRet > 0)
+	{
+		::MessageBoxA(NULL, "成功", "远程注入", MB_OK);
+	}
+	else
+	{
+		CString str;
+		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
+		::MessageBox(NULL, str.GetString(), TEXT("远程注入"), MB_OK);
+	}
+	if (buf != NULL)
+	{
+		delete[]buf;
+	}
 }

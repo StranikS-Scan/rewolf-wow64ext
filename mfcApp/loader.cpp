@@ -764,7 +764,7 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 	DWORD shellCodeSize = sizeof(ShellCodeX64);
 	VOID *pShellCodeX64 = ShellCodeX64;
 	PARAMX64 param;
-	RtlZeroMemory(&param, sizeof(PARAMX));
+	RtlZeroMemory(&param, sizeof(PARAMX64));
 	param.DataLength = dataSize;
 	param.LdrGetProcAddr = (DWORD64)GetProcAddress(hNTDLL, 
 		"LdrGetProcedureAddress");
@@ -779,7 +779,7 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 		"RtlFreeUnicodeString");
 
 	//开始远程注入
-	EnableDebugPrivilege();
+	BOOL bRet = EnableDebugPrivilege();
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, processId);
 	if (hProcess == NULL)
 	{
@@ -797,12 +797,12 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 	}
 
 	param.lpFileData = pAddress;//修成下DLL数据的地址
-	WriteProcessMemory(hProcess, (LPVOID)pAddress, 
+	bRet = WriteProcessMemory(hProcess, (LPVOID)pAddress,
 		data, dataSize, &dWrited);//DLL数据写入到目标
-	WriteProcessMemory(hProcess, (LPVOID)(pAddress + dataSize),
+	bRet = WriteProcessMemory(hProcess, (LPVOID)(pAddress + dataSize),
 		pShellCodeX64, shellCodeSize, &dWrited);//shellcode写入到目标
-	WriteProcessMemory(hProcess, (LPVOID)(pAddress + dataSize + shellCodeSize),
-		&param, sizeof(PARAMX), &dWrited);//参数写入到目标
+	bRet = WriteProcessMemory(hProcess, (LPVOID)(pAddress + dataSize + shellCodeSize),
+		&param, sizeof(PARAMX64), &dWrited);//参数写入到目标
 	_NtCreateThreadEx NtCreateThreadEx64 
 		= (_NtCreateThreadEx)GetProcAddress(hNTDLL, "NtCreateThreadEx");
 	if (NtCreateThreadEx64 == NULL)
@@ -812,12 +812,12 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 		return FALSE;
 	}
 	HANDLE hThread = NULL;
-	NtCreateThreadEx64(&hThread, (DWORD64)THREAD_ALL_ACCESS, NULL, 
-		hProcess, (LPTHREAD_START_ROUTINE)(pAddress + dataSize), 
+	NTSTATUS ntRet = NtCreateThreadEx64(&hThread, (DWORD64)THREAD_ALL_ACCESS, 
+		NULL, hProcess, (LPTHREAD_START_ROUTINE)(pAddress + dataSize),
 		(LPVOID)(pAddress + dataSize + shellCodeSize), 0, 0, 0, 0, 0);
 	CloseHandle(hProcess);
 	CloseHandle(hThread);
-	return TRUE;
+	return (ntRet >= 0);
 }
 #else
 
