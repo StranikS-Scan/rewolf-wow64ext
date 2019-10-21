@@ -34,7 +34,7 @@ struct PARAMX
 	LdrLoadDllT pLdrLoadDll;
 	RtlInitAnsiStrT RtlInitAnsiString;
 	RtlAnsiStrToUniStrT RtlAnsiStriToUniStr;
-	RtlFreeUniStrT RtlFreeUnicodeString;	
+	RtlFreeUniStrT RtlFreeUniStr;	
 };
 
 struct PARAMX64
@@ -46,7 +46,7 @@ struct PARAMX64
 	DWORD64 pLdrLoadDll;
 	DWORD64 RtlInitAnsiString;
 	DWORD64 RtlAnsiStriToUniStr;
-	DWORD64 RtlFreeUnicodeString;
+	DWORD64 RtlFreeUniStr;
 };
 
 //打开DEBUG调试权限，有用到

@@ -323,7 +323,11 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 	CString str;
 	GetDlgItemText(IDC_EDIT_PROC_ID, str);
 	DWORD pid = _ttoi(str);
+#ifdef _WIN64
 	m_bRet = LoadRemoteDataX64ByX64(buf, len, pid);
+#else
+	m_bRet = 0;
+#endif
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "远程注入", MB_OK);

@@ -441,7 +441,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 	LdrLoadDllT pLdrLoadDll = (X->pLdrLoadDll);
 	RtlInitAnsiStrT RtlInitAnsiString = X->RtlInitAnsiString;
 	RtlAnsiStrToUniStrT RtlAnsiStriToUniStr = X->RtlAnsiStriToUniStr;
-	RtlFreeUniStrT RtlFreeUniStr = X->RtlFreeUnicodeString;
+	RtlFreeUniStrT RtlFreeUniStr = X->RtlFreeUniStr;
 
 	ProcDllMain pDllMain = NULL;
 	void *pMemoryAddress = NULL;
@@ -713,7 +713,7 @@ BOOL LoadLocalDll(LPCSTR dllName)
 		"RtlInitAnsiString");
 	param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUnicodeString = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
+	param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
 		"RtlFreeUnicodeString");
 	PVOID pModule = (PVOID)MemLoadLibrary(&param);
 	CloseHandle(hFile);
@@ -739,7 +739,7 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 		"RtlInitAnsiString");
 	param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUnicodeString = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
+	param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
 		"RtlFreeUnicodeString");
 	try
 	{
@@ -775,7 +775,7 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 		"RtlInitAnsiString");
 	param.RtlAnsiStriToUniStr = (DWORD64)GetProcAddress(hNTDLL, 
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUnicodeString = (DWORD64)GetProcAddress(hNTDLL,
+	param.RtlFreeUniStr = (DWORD64)GetProcAddress(hNTDLL,
 		"RtlFreeUnicodeString");
 
 	//开始远程注入
@@ -821,7 +821,7 @@ BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
 }
 #else
 
-void LoadRemotedll32byX64(LPSTR dllName, LPSTR Processname)
+void LoadRemoteDll32ByX64(LPSTR dllName, LPSTR Processname)
 {
 	SIZE_T dWrited = 0;
 	DWORD processId = GetProcessId(Processname);
