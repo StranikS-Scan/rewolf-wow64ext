@@ -110,7 +110,9 @@ BOOL CmfcAppDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 	
-	PCTSTR text =TEXT("D:\\mywork\\clientShell\\cpp\\x64\\Debug\\client.dll");
+	//PCTSTR text =TEXT("D:\\mywork\\rewolf-wow64ext\\bin\\conDll64.dll");
+	//PCTSTR text = TEXT("D:\\mywork\\rewolf-wow64ext\\bin\\conDll32.dll");
+	PCTSTR text = TEXT("..\\bin\\conDll32.dll");
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_FILENAME);//获取相应的编辑框ID
 	pEdit->SetWindowText(text); //设置默认显示的内容 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
