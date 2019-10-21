@@ -353,11 +353,13 @@ struct _CONTEXT64
 #pragma pack(pop)
 
 #ifdef WOW64EXT_EXPORTS
-#   define SPEC dllexport
+#define SPEC dllexport
 #else
-#   define SPEC dllimport
+#define SPEC dllimport
 #endif
 
+DWORD64 getNTDLL64();
+DWORD64 getLdrGetProcedureAddress();
 extern "C"
 {
 	__declspec(SPEC)DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...);

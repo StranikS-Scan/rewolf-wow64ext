@@ -1,3 +1,4 @@
+#ifndef _WIN64
 /**
  *
  * WOW64Ext Library
@@ -74,6 +75,8 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 #pragma warning(disable : 4409)
 extern "C" __declspec(dllexport) DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...)
 {
+	BOOL g_isWow64 = FALSE;
+	IsWow64Process(GetCurrentProcess(), &g_isWow64);
 	if (!g_isWow64)
 		return 0;
 
@@ -297,6 +300,8 @@ DWORD64 getTEB64()
 
 extern "C" __declspec(dllexport) DWORD64 __cdecl GetModuleHandle64(const wchar_t* lpModuleName)
 {
+	BOOL g_isWow64 = FALSE;
+	IsWow64Process(GetCurrentProcess(), &g_isWow64);
 	if (!g_isWow64)
 		return 0;
 
@@ -611,3 +616,5 @@ extern "C" __declspec(dllexport) BOOL __cdecl SetThreadContext64(HANDLE hThread,
     else
         return TRUE;
 }
+
+#endif 
