@@ -334,7 +334,7 @@ extern "C" __declspec(dllexport) DWORD64 __cdecl GetModuleHandle64(const wchar_t
     return 0;
 }
 
-DWORD64 getNTDLL64()
+extern "C" __declspec(dllexport) DWORD64 __cdecl getNTDLL64()
 {
     static DWORD64 ntdll64 = 0;
     if (0 != ntdll64)
@@ -344,7 +344,7 @@ DWORD64 getNTDLL64()
     return ntdll64;
 }
 
-DWORD64 getLdrGetProcedureAddress()
+extern "C" __declspec(dllexport) DWORD64 __cdecl getLdrGetProcedureAddress()
 {
     DWORD64 modBase = getNTDLL64();
 	if (0 == modBase)

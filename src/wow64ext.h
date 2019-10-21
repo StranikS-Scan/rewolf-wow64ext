@@ -63,8 +63,9 @@ struct _NT_TIB_T
     T Self;
 };
 
+//多加个下划线，避免跟winternl.h重定义
 template <class T>
-struct _CLIENT_ID
+struct __CLIENT_ID
 {
     T UniqueProcess;
     T UniqueThread;
@@ -75,7 +76,7 @@ struct _TEB_T_
 {
     _NT_TIB_T<T> NtTib;
     T EnvironmentPointer;
-    _CLIENT_ID<T> ClientId;
+	__CLIENT_ID<T> ClientId;
     T ActiveRpcHandle;
     T ThreadLocalStoragePointer;
     T ProcessEnvironmentBlock;
@@ -358,10 +359,10 @@ struct _CONTEXT64
 #define SPEC dllimport
 #endif
 
-DWORD64 getNTDLL64();
-DWORD64 getLdrGetProcedureAddress();
 extern "C"
 {
+	__declspec(SPEC)DWORD64 __cdecl getNTDLL64();
+	__declspec(SPEC)DWORD64 __cdecl getLdrGetProcedureAddress();
 	__declspec(SPEC)DWORD64 __cdecl X64Call(DWORD64 func, int argC, ...);
 	__declspec(SPEC)DWORD64 __cdecl GetModuleHandle64(const wchar_t* lpModuleName);
 	__declspec(SPEC)DWORD64 __cdecl GetProcAddress64(DWORD64 hModule, const char* funcName);

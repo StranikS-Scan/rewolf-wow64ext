@@ -193,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="CommonLib.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="loader.h" />
     <ClInclude Include="mfcApp.h" />
     <ClInclude Include="mfcAppDlg.h" />
     <ClInclude Include="pch.h" />
@@ -201,6 +202,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CommonLib.cpp" />
+    <ClCompile Include="loader.cpp" />
     <ClCompile Include="mfcApp.cpp" />
     <ClCompile Include="mfcAppDlg.cpp" />
     <ClCompile Include="pch.cpp">
