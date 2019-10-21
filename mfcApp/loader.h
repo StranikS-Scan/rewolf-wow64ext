@@ -60,9 +60,10 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 #ifdef _WIN64
 BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
-BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
-VOID LoadRemoteData32by32(LPVOID data, DWORD dataSize, DWORD processId);
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
+BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
+VOID LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
+BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
 #endif
 
 
