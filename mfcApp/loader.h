@@ -6,7 +6,7 @@ typedef DWORD DWORDX;
 typedef DWORD64 DWORDX;
 #endif
 
-typedef NTSTATUS(WINAPI *_NtCreateThreadEx)(PHANDLE ThreadHandle, 
+typedef NTSTATUS(WINAPI*_NtCreateThreadEx)(PHANDLE ThreadHandle,
 	ACCESS_MASK DesiredAccess, LPVOID ObjectAttributes, HANDLE ProcessHandle,
 	LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, 
 	BOOL CreateSuspended, DWORD64 dwStackSize, 
@@ -60,9 +60,13 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 #ifdef _WIN64
 BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
+//该函数没有任何效果
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
+//该函数没有任何效果
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
-VOID LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
+//Run-Time Check Failure #0，The value of ESP was not properly saved
+BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
+//该函数没有任何效果
 BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
 #endif
 

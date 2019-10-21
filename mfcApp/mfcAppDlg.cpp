@@ -298,7 +298,8 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 	string fileName = getFileName();
 	int len = readFile(fileName, buf);
 	//m_bRet = LoadLocalDll(fileName.c_str());
-	m_bRet = LoadLocalData(buf, len);
+	//m_bRet = LoadLocalData(buf, len);
+	m_bRet = LoadLocalData32By64(buf, len);
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
@@ -323,7 +324,9 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 	CString str;
 	GetDlgItemText(IDC_EDIT_PROC_ID, str);
 	DWORD pid = _ttoi(str);
-	m_bRet = LoadRemoteDataX64ByX64(buf, len, pid);
+	//m_bRet = LoadRemoteDataX64ByX64(buf, len, pid);//无效
+	//m_bRet = LoadRemoteData32By64(buf, len, pid);//无效
+	m_bRet = LoadRemoteData32By32(buf, len, pid); //报错32位能弹
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "远程注入", MB_OK);
