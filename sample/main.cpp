@@ -68,10 +68,12 @@ void AllocTest(HANDLE hProcess)
 #include "PstrConverter.h"
 int main (int argc, char* argv[])
 {
+#if 0
 	DWORD64 kernel32 = GetModuleHandle64(L"kernel32.dll");
 	printf("kernel32: %016I64X\n", kernel32);
 	DWORD64 loadLib = GetProcAddress64(kernel32, "LoadLibraryW");
 	printf("LoadLibraryW address: %016I64X\n", loadLib);
+#endif
 
 #if 0
 	DWORD64 s = GetProcAddress64(GetModuleHandle64(L"wow64cpu.dll"),
@@ -162,12 +164,12 @@ int main (int argc, char* argv[])
     DWORD64 ntdll64 = GetModuleHandle64(L"ntdll.dll");
     printf("\nNTDLL64: %016I64X\n\n", ntdll64);
 
-    DWORD64 rtlcrc32 = GetProcAddress64(ntdll64, "RtlComputeCrc32");
-    printf("RtlComputeCrc32 address: %016I64X\n", rtlcrc32);
+    DWORD64 rtlCrc32 = GetProcAddress64(ntdll64, "RtlComputeCrc32");
+    printf("RtlComputeCrc32 address: %016I64X\n", rtlCrc32);
 
-    if (0 != rtlcrc32)
+    if (0 != rtlCrc32)
     {
-        DWORD64 ret = X64Call(rtlcrc32, 3, (DWORD64)0, (DWORD64)"ReWolf", (DWORD64)6);
+        DWORD64 ret = X64Call(rtlCrc32, 3, (DWORD64)0, (DWORD64)"ReWolf", (DWORD64)6);
         printf("CRC32(\"ReWolf\") = %016I64X\n\n", ret);
     }
 
