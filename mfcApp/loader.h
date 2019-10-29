@@ -53,7 +53,6 @@ struct PARAMX64
 BOOL EnableDebugPrivilege();
 
 DWORD_PTR WINAPI MemLoadLibrary(PARAMX *X);
-BOOL SaveShellCode(DWORD size); //没有用到
 BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 
 #ifdef _WIN64

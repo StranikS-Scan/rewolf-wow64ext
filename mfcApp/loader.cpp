@@ -430,20 +430,6 @@ CODE_EXIT:
 	return (DWORDX)pMemoryAddress;
 }
 
-BOOL SaveShellCode(DWORD size)
-{
-	DWORD dwNumberOfBytesWritten = 0;
-	HANDLE hFile = CreateFileA("c:\\1.CODE", GENERIC_ALL,
-		FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, NULL, NULL);
-	if (hFile)
-	{
-		WriteFile(hFile, MemLoadLibrary, size, &dwNumberOfBytesWritten, NULL);
-		CloseHandle(hFile);
-		return (size == dwNumberOfBytesWritten);
-	}
-	return FALSE;
-}
-
 BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 {
 	HMODULE hNTDLL = GetModuleHandleA("ntdll");
@@ -707,7 +693,6 @@ BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
 		(DWORD64)(pAddress + dataSize + shellCodeSize));
 	return (dwRet > 0);
 }
-#endif
 
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 {//该函数没有任何效果
@@ -767,3 +752,4 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
 	return (dwRet > 0);
 }
+#endif

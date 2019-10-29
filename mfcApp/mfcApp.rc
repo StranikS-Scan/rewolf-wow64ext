@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\mfcApp.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊归悧鐐垫椤愶附鍎嶉柛鏇ㄥ枤閵堫偅绻?\n"
-    "#include ""l.CHS\\afxres.rc""      // 闂佸搫绉村ú銈夊闯椤栨粎纾奸柛鏇ㄤ簼椤?\n"
+    "#include ""res\\mfcApp.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐褰掓偋閻愬灚顐芥い鎰堕檮閸庡秹鏌涢弴銊ユ灓闁靛牜鍋呯换?\n"
+    "#include ""l.CHS\\afxres.rc""      // 闂備礁鎼粔鏉懨洪妶澶婇棷妞ゆ牗绮庣壕濂告煕閺囥劋绨兼い?\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂佸憡姊婚崰鏇㈠礂濮椻偓瀹曠娀宕崟顒€顏梺纭呯焽閸愩劎鍘梺鍝勵棥閵堝洢鍋掑┑?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂備礁鎲″濠氬窗閺囥垹绀傛慨妞诲亾鐎规洜濞€瀹曨偊宕熼鈧顖炴⒑绾懐鐒介柛鎰╁妿閸橆剟姊洪崫鍕垫％闁靛牆娲㈤崑鎺戔攽?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -108,8 +108,8 @@ BEGIN
     PUSHBUTTON      "加载DLL文件",IDC_BTN_LOAD_DLL,88,53,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "运行EXE文件2",IDC_BTN_START_EXE2,88,101,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "本地内存加载",IDC_BTN_LOAD_DLL2,33,71,50,14,BS_CENTER | WS_GROUP
-    PUSHBUTTON      "远程注入64",IDC_BTN_INJECT_DLL64,235,53,50,14,BS_CENTER | WS_GROUP
-    EDITTEXT        IDC_EDIT_PROC_ID,189,53,43,14
+    PUSHBUTTON      "远程注入(64To64)",IDC_BTN_INJECT_DLL64,219,53,66,14,BS_CENTER | WS_GROUP
+    EDITTEXT        IDC_EDIT_PROC_ID,171,53,43,14
     PUSHBUTTON      "加载DLL内存",IDC_BTN_LOAD_DLL3,88,71,50,14,BS_CENTER | WS_GROUP
 END
 

@@ -63,6 +63,7 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_LOAD_LIB, &CmfcAppDlg::OnBnClickedBtnLoadLib)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL2, &CmfcAppDlg::OnBnClickedBtnLoadDll2)
 	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64, &CmfcAppDlg::OnBnClickedBtnInjectDll64)
+	ON_BN_CLICKED(IDC_BTN_LOAD_DLL3, &CmfcAppDlg::OnBnClickedBtnLoadDll3)
 END_MESSAGE_MAP()
 
 // CmfcAppDlg 消息处理程序
@@ -248,9 +249,7 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 	CString str;
 	GetDlgItemText(IDC_EDIT_PROC_ID, str);
 	DWORD pid = _ttoi(str);
-	//m_bRet = LoadRemoteData64By64(buf, len, pid);//无效
-	//m_bRet = LoadRemoteData32By64(buf, len, pid);//无效
-	m_bRet = LoadRemoteData32By32(buf, len, pid); //报错32位能弹
+	m_bRet = LoadRemoteData64By64(buf, len, pid); //报错32位能弹
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "远程注入", MB_OK);
@@ -265,4 +264,10 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 	{
 		delete[]buf;
 	}
+}
+
+
+void CmfcAppDlg::OnBnClickedBtnLoadDll3()
+{
+	// TODO: 在此添加控件通知处理程序代码
 }
