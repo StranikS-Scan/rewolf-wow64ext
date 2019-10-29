@@ -295,5 +295,22 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll32t64()
 
 void CmfcAppDlg::OnBnClickedBtnLoadDll3()
 {
-	// TODO: 在此添加控件通知处理程序代码
+	char* buf = NULL;
+	string fileName = getFileName();
+	int len = readFile(fileName, buf);
+	m_bRet = LoadLocalData32By64(buf, len);
+	if (m_bRet > 0)
+	{
+		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
+	}
+	else
+	{
+		CString str;
+		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
+		::MessageBox(NULL, str.GetString(), TEXT("加载DLL"), MB_OK);
+	}
+	if (buf != NULL)
+	{
+		delete[]buf;
+	}
 }

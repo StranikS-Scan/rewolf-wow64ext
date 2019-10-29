@@ -54,10 +54,10 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
     "LANGUAGE 4, 2\r\n"
-    "#include ""res\\mfcApp.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐褰掓偋閻愬灚顐芥い鎰堕檮閸庡秹鏌涢弴銊ユ灓闁靛牜鍋呯换?\n"
-    "#include ""l.CHS\\afxres.rc""      // 闂備礁鎼粔鏉懨洪妶澶婇棷妞ゆ牗绮庣壕濂告煕閺囥劋绨兼い?\n"
+    "#include ""res\\mfcApp.rc2""  // 闂?Microsoft Visual C++ 缂傚倸鍊搁崐鎼佸磹瑜版帗鍋嬮柣鎰仛椤愯姤銇勯幇鍫曟闁稿骸绉归弻娑㈠即閵娿儲鐏撻梺闈涚墱閸嬪懐鎹?\n"
+    "#include ""l.CHS\\afxres.rc""      // 闂傚倷绀侀幖顐ょ矓閺夋嚚娲Χ婢跺﹪妫峰銈嗙墬缁海澹曟總鍛婄厱闁哄洢鍔嬬花鍏笺亜?\n"
     "#if !defined(_AFXDLL)\r\n"
-    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂備礁鎲″濠氬窗閺囥垹绀傛慨妞诲亾鐎规洜濞€瀹曨偊宕熼鈧顖炴⒑绾懐鐒介柛鎰╁妿閸橆剟姊洪崫鍕垫％闁靛牆娲㈤崑鎺戔攽?\n"
+    "#include ""l.CHS\\afxribbon.rc""   // MFC 闂傚倷绀侀幉鈥愁潖婵犳艾绐楅柡鍥ュ灩缁€鍌涙叏濡炶浜鹃悗瑙勬礈婵炩偓鐎规洦鍋婂畷鐔碱敆閳ь剟顢旈鐐粹拺缁绢厼鎳愰悞浠嬫煕閹扳晛濡块柛姗嗗墴濮婃椽宕崟鍨紖闂侀潧鐗嗗ú銏ゅ磻閹烘垟鏀?\n"
     "#endif\r\n"
     "#endif\r\n"
     "\0"
@@ -105,13 +105,13 @@ BEGIN
     PUSHBUTTON      "内存运行EXE",IDC_BTN_RUN_EXE,144,101,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "运行EXE文件",IDC_BTN_START_EXE,33,101,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "LoadLibrary",IDC_BTN_LOAD_LIB,33,53,50,14,BS_CENTER | WS_GROUP
-    PUSHBUTTON      "加载DLL文件",IDC_BTN_LOAD_DLL,88,53,50,14,BS_CENTER | WS_GROUP
+    PUSHBUTTON      "命令加载DLL文件",IDC_BTN_LOAD_DLL,88,53,64,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "运行EXE文件2",IDC_BTN_START_EXE2,88,101,50,14,BS_CENTER | WS_GROUP
     PUSHBUTTON      "本地内存加载",IDC_BTN_LOAD_DLL2,33,71,50,14,BS_CENTER | WS_GROUP
-    PUSHBUTTON      "远程注入(64To64)",IDC_BTN_INJECT_DLL64T64,219,53,66,14,BS_CENTER | WS_GROUP
+    PUSHBUTTON      "远程注入(64to64)",IDC_BTN_INJECT_DLL64T64,219,53,66,14,BS_CENTER | WS_GROUP
     EDITTEXT        IDC_EDIT_PROC_ID,171,53,43,14
-    PUSHBUTTON      "加载DLL内存",IDC_BTN_LOAD_DLL3,88,71,50,14,BS_CENTER | WS_GROUP
-    PUSHBUTTON      "远程注入(32To64)",IDC_BTN_INJECT_DLL32T64,219,71,66,14,BS_CENTER | WS_GROUP
+    PUSHBUTTON      "本地内存(32by64)",IDC_BTN_LOAD_DLL3,88,71,64,14,BS_CENTER | WS_GROUP
+    PUSHBUTTON      "远程注入(32to64)",IDC_BTN_INJECT_DLL32T64,219,71,66,14,BS_CENTER | WS_GROUP
 END
 
 

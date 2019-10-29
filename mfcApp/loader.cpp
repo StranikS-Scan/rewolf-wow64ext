@@ -197,14 +197,14 @@ BOOL EnableDebugPrivilege()
 DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 {
 	LPCVOID lpFileData = X->lpFileData;
-	DWORDX DataLength = X->DataLength;
+	DWORDX DataLength = X->nDataLength;
 	/****************初始化调用函数********************/
-	LdrGetProcAddrT LdrGetProcAddr = (X->LdrGetProcAddr);
-	NtAllocVirtualMemT pNtAllocVirtualMem = (X->dwNtAllocVirtualMem);
-	LdrLoadDllT pLdrLoadDll = (X->pLdrLoadDll);
-	RtlInitAnsiStrT RtlInitAnsiString = X->RtlInitAnsiString;
-	RtlAnsiStrToUniStrT RtlAnsiStriToUniStr = X->RtlAnsiStriToUniStr;
-	RtlFreeUniStrT RtlFreeUniStr = X->RtlFreeUniStr;
+	LdrGetProcAddrT LdrGetProcAddr = (X->fnLdrGetProcAddr);
+	NtAllocVirtualMemT pNtAllocVirtualMem = (X->fnNtAllocVirtualMem);
+	LdrLoadDllT pLdrLoadDll = (X->fnLdrLoadDll);
+	RtlInitAnsiStrT RtlInitAnsiString = X->fnRtlInitAnsiString;
+	RtlAnsiStrToUniStrT RtlAnsiStriToUniStr = X->fnRtlAnsiStriToUniStr;
+	RtlFreeUniStrT RtlFreeUniStr = X->fnRtlFreeUniStr;
 
 	ProcDllMain pDllMain = NULL;
 	void *pMemoryAddress = NULL;
@@ -438,17 +438,17 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 		PARAMX param;
 		RtlZeroMemory(&param, sizeof(PARAMX));
 		param.lpFileData = data;
-		param.DataLength = dataSize;
-		param.LdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
+		param.nDataLength = dataSize;
+		param.fnLdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
 			"LdrGetProcedureAddress");
-		param.dwNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
+		param.fnNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
 			"NtAllocateVirtualMemory");
-		param.pLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
-		param.RtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
+		param.fnLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
+		param.fnRtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
 			"RtlInitAnsiString");
-		param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
+		param.fnRtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
 			"RtlAnsiStringToUnicodeString");
-		param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
+		param.fnRtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
 			"RtlFreeUnicodeString");
 		PVOID pModule = (PVOID)MemLoadLibrary(&param);
 		return (pModule != NULL);
@@ -460,28 +460,80 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 }
 
 #ifndef _WIN64
+BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
+{
+	if (!data || !dataSize) return FALSE;
+	if (!IsValidData(data, dataSize)) return FALSE;
+
+	PARAMX64 param;
+	RtlZeroMemory(&param, sizeof(PARAMX64));
+	param.nDataLength = dataSize;
+	param.fnLdrGetProcAddr = getLdrGetProcedureAddress();
+	param.fnNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
+		"NtAllocateVirtualMemory");
+	param.fnLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
+	param.fnRtlInitAnsiString = GetProcAddress64(getNTDLL64(), 
+		"RtlInitAnsiString");
+	param.fnRtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
+		"RtlAnsiStringToUnicodeString");
+	param.fnRtlFreeUniStr = GetProcAddress64(getNTDLL64(), 
+		"RtlFreeUnicodeString");
+
+	DWORD shellCodeSize = sizeof(ShellCodeX64);
+	HANDLE hProcess = GetCurrentProcess();
+	//(HANDLE)-1, that is interpreted as the current process handle. 
+	//申请内存,把shellcode和DLL数据,和参数复制到目标进程
+	DWORD64 pAddress = VirtualAllocEx64(hProcess, 0, 
+		dataSize + shellCodeSize + sizeof(PARAMX64) + 0x100, 
+		MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+	if (!pAddress)
+	{
+		return FALSE;
+	}
+
+	SIZE_T dWrited = 0;
+	VOID* pShellCode = ShellCodeX64;
+	param.lpFileData = (DWORD64)pAddress;//修成下DLL数据的地址
+	BOOL bRet = WriteProcessMemory64(hProcess, pAddress,
+		data, dataSize, &dWrited);//DLL数据写入到目标
+	bRet = WriteProcessMemory64(hProcess, pAddress + dataSize,
+		pShellCode, shellCodeSize, &dWrited);//shellcode写入到目标
+	bRet = WriteProcessMemory64(hProcess, pAddress + dataSize + shellCodeSize,
+		&param, sizeof(PARAMX64), &dWrited);//参数写入到目标
+	DWORD64 dwRet = X64Call((DWORD64)(pAddress + dataSize), 1,
+		(DWORD64)(pAddress + dataSize + shellCodeSize));
+	/*HANDLE hThread = INVALID_HANDLE_VALUE;
+	DWORD64 NtCreateThreadEx64 = GetProcAddress64(getNTDLL64(), "NtCreateThreadEx");
+	DWORD64 dwRet = X64Call(NtCreateThreadEx64, 11, &hThread, 
+		(DWORD64)THREAD_ALL_ACCESS, (DWORD64)NULL, (DWORD64)hProcess, 
+		(DWORD64)(pAddress + dataSize), (DWORD64)(pAddress + dataSize + shellCodeSize),
+		(DWORD64)FALSE, (DWORD64)0, (DWORD64)0, (DWORD64)0, (DWORD64)NULL);
+	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);*/
+	return (dwRet > 0);
+}
+
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 {
 	if (processId == 0) return FALSE;
 	HMODULE hNTDLL = GetModuleHandleA("ntdll.dll");
 	if (!hNTDLL) return FALSE;
-	
+
 	PARAMX param;
 	RtlZeroMemory(&param, sizeof(PARAMX));
 	//param.lpFileData = data;
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL, 
+	param.nDataLength = dataSize;
+	param.fnLdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
 		"LdrGetProcedureAddress");
-	param.dwNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
+	param.fnNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
 		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
-	param.RtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
+	param.fnLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
+	param.fnRtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
 		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
+	param.fnRtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
+	param.fnRtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
 		"RtlFreeUnicodeString");
-	
+
 	//开始远程注入
 	BOOL bRet = EnableDebugPrivilege();
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, processId);
@@ -509,76 +561,34 @@ BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 		pShellCode, shellCodeSize, &dWrited);//shellcode写入到目标
 	bRet = WriteProcessMemory(hProcess, (LPVOID)(pAddress + dataSize + shellCodeSize),
 		&param, sizeof(PARAMX), &dWrited);//参数写入到目标
-	NtCreateThreadEx NtCreateThreadEx64 
+	NtCreateThreadEx NtCreateThreadEx64
 		= (NtCreateThreadEx)GetProcAddress(hNTDLL, "NtCreateThreadEx");
 	if (NtCreateThreadEx64 == NULL) return FALSE;
 	HANDLE hThread = INVALID_HANDLE_VALUE;
-	NTSTATUS ntRet = NtCreateThreadEx64(&hThread, 
-		(DWORD)THREAD_ALL_ACCESS, NULL,	hProcess,
+	NTSTATUS ntRet = NtCreateThreadEx64(&hThread,
+		(DWORD)THREAD_ALL_ACCESS, NULL, hProcess,
 		(LPTHREAD_START_ROUTINE)(pAddress + dataSize),
-		(LPVOID)(pAddress + dataSize + shellCodeSize), 
+		(LPVOID)(pAddress + dataSize + shellCodeSize),
 		0, 0, 0, 0, 0);
 	if (INVALID_HANDLE_VALUE != hProcess) CloseHandle(hProcess);
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
-	return (ntRet>=0);
-}
-
-BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
-{
-	PARAMX64 param;
-	RtlZeroMemory(&param, sizeof(PARAMX64));
-	//param.lpFileData = (DWORD64)data;
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = getLdrGetProcedureAddress();
-	param.dwNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
-		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
-	param.RtlInitAnsiString = GetProcAddress64(getNTDLL64(), 
-		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
-		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = GetProcAddress64(getNTDLL64(), 
-		"RtlFreeUnicodeString");
-
-	DWORD shellCodeSize = sizeof(ShellCodeX64);
-	VOID* pShellCode = ShellCodeX64;
-	HANDLE hProcess = GetCurrentProcess();
-	//申请内存,把shellcode和DLL数据,和参数复制到目标进程
-	DWORD64 pAddress = VirtualAllocEx64(hProcess, 0, 
-		dataSize + shellCodeSize + sizeof(PARAMX64) + 0x100, 
-		MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-	if (!pAddress)
-	{
-		return FALSE;
-	}
-
-	SIZE_T dWrited = 0;
-	param.lpFileData = (DWORD64)pAddress;//修成下DLL数据的地址
-	BOOL bRet = WriteProcessMemory64(hProcess, pAddress,
-		data, dataSize, &dWrited);//DLL数据写入到目标
-	bRet = WriteProcessMemory64(hProcess, pAddress + dataSize,
-		pShellCode, shellCodeSize, &dWrited);//shellcode写入到目标
-	bRet = WriteProcessMemory64(hProcess, pAddress + dataSize + shellCodeSize,
-		&param, sizeof(PARAMX64), &dWrited);//参数写入到目标
-	DWORD64 dwRet = X64Call((DWORD64)(pAddress + dataSize), 1,
-		(DWORD64)(pAddress + dataSize + shellCodeSize));
-	return (dwRet > 0);
+	return (ntRet >= 0);
 }
 
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 {
 	PARAMX64 param;
 	RtlZeroMemory(&param, sizeof(PARAMX64));
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = getLdrGetProcedureAddress();
-	param.dwNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
+	param.nDataLength = dataSize;
+	param.fnLdrGetProcAddr = getLdrGetProcedureAddress();
+	param.fnNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
 		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
-	param.RtlInitAnsiString = GetProcAddress64(getNTDLL64(),
+	param.fnLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
+	param.fnRtlInitAnsiString = GetProcAddress64(getNTDLL64(),
 		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
+	param.fnRtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = GetProcAddress64(getNTDLL64(),
+	param.fnRtlFreeUniStr = GetProcAddress64(getNTDLL64(),
 		"RtlFreeUnicodeString");
 
 	//开始远程注入
@@ -624,16 +634,16 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 {//该函数没有任何效果
 	PARAMX64 param;
 	RtlZeroMemory(&param, sizeof(PARAMX64));
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = getLdrGetProcedureAddress();
-	param.dwNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
+	param.nDataLength = dataSize;
+	param.fnLdrGetProcAddr = getLdrGetProcedureAddress();
+	param.fnNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
 		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
-	param.RtlInitAnsiString = GetProcAddress64(getNTDLL64(),
+	param.fnLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
+	param.fnRtlInitAnsiString = GetProcAddress64(getNTDLL64(),
 		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
+	param.fnRtlAnsiStriToUniStr = GetProcAddress64(getNTDLL64(),
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = GetProcAddress64(getNTDLL64(),
+	param.fnRtlFreeUniStr = GetProcAddress64(getNTDLL64(),
 		"RtlFreeUnicodeString");
 		
 	//开始远程注入
@@ -676,6 +686,11 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 }
 
 #else
+BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
+{//不支持，直接失败
+	return FALSE;
+}
+
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 {//不支持，直接失败
 	return FALSE;
@@ -683,26 +698,24 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 {
-	SIZE_T dWrited = 0;
-	HMODULE hNTDLL = NULL;
 	if (!data || !dataSize || !processId) return FALSE;
 	if (!IsValidData(data, dataSize)) return FALSE;
-	hNTDLL = GetModuleHandleA("ntdll.dll");
+	HMODULE hNTDLL = GetModuleHandleA("ntdll.dll");
 	if (!hNTDLL) return FALSE;
 
 	PARAMX64 param;
 	RtlZeroMemory(&param, sizeof(PARAMX64));
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = (DWORD64)GetProcAddress(hNTDLL,
+	param.nDataLength = dataSize;
+	param.fnLdrGetProcAddr = (DWORD64)GetProcAddress(hNTDLL,
 		"LdrGetProcedureAddress");
-	param.dwNtAllocVirtualMem = (DWORD64)GetProcAddress(hNTDLL,
+	param.fnNtAllocVirtualMem = (DWORD64)GetProcAddress(hNTDLL,
 		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = (DWORD64)GetProcAddress(hNTDLL, "LdrLoadDll");
-	param.RtlInitAnsiString = (DWORD64)GetProcAddress(hNTDLL,
+	param.fnLdrLoadDll = (DWORD64)GetProcAddress(hNTDLL, "LdrLoadDll");
+	param.fnRtlInitAnsiString = (DWORD64)GetProcAddress(hNTDLL,
 		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = (DWORD64)GetProcAddress(hNTDLL,
+	param.fnRtlAnsiStriToUniStr = (DWORD64)GetProcAddress(hNTDLL,
 		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = (DWORD64)GetProcAddress(hNTDLL,
+	param.fnRtlFreeUniStr = (DWORD64)GetProcAddress(hNTDLL,
 		"RtlFreeUnicodeString");
 
 	//开始远程注入
@@ -730,6 +743,7 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 		return FALSE;
 	}
 
+	SIZE_T dWrited = 0;
 	VOID* pShellCode = ShellCodeX64;
 	param.lpFileData = pAddress;//修成下DLL数据的地址
 	bRet = WriteProcessMemory(hProcess, (LPVOID)pAddress,
@@ -749,7 +763,8 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 	HANDLE hThread = INVALID_HANDLE_VALUE;
 	NTSTATUS ntRet = NtCreateThreadEx64(&hThread, (DWORD64)THREAD_ALL_ACCESS,
 		NULL, hProcess, (LPTHREAD_START_ROUTINE)(pAddress + dataSize),
-		(LPVOID)(pAddress + dataSize + shellCodeSize), 0, 0, 0, 0, 0);
+		(LPVOID)(pAddress + dataSize + shellCodeSize), 
+		FALSE, 0, 0, 0, NULL);
 	if (INVALID_HANDLE_VALUE != hProcess) CloseHandle(hProcess);
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
 	return (ntRet >= 0);

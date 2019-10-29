@@ -28,25 +28,25 @@ typedef NTSTATUS (WINAPI *NtAllocVirtualMemT)(IN HANDLE ProcessHandle,
 struct PARAMX
 {
 	PVOID lpFileData;
-	DWORDX DataLength;
-	LdrGetProcAddrT LdrGetProcAddr;
-	NtAllocVirtualMemT dwNtAllocVirtualMem;
-	LdrLoadDllT pLdrLoadDll;
-	RtlInitAnsiStrT RtlInitAnsiString;
-	RtlAnsiStrToUniStrT RtlAnsiStriToUniStr;
-	RtlFreeUniStrT RtlFreeUniStr;	
+	DWORDX nDataLength;
+	LdrGetProcAddrT fnLdrGetProcAddr;
+	NtAllocVirtualMemT fnNtAllocVirtualMem;
+	LdrLoadDllT fnLdrLoadDll;
+	RtlInitAnsiStrT fnRtlInitAnsiString;
+	RtlAnsiStrToUniStrT fnRtlAnsiStriToUniStr;
+	RtlFreeUniStrT fnRtlFreeUniStr;	
 };
 
 struct PARAMX64
 {
 	DWORD64 lpFileData;
-	DWORD64 DataLength;
-	DWORD64 LdrGetProcAddr;
-	DWORD64 dwNtAllocVirtualMem;
-	DWORD64 pLdrLoadDll;
-	DWORD64 RtlInitAnsiString;
-	DWORD64 RtlAnsiStriToUniStr;
-	DWORD64 RtlFreeUniStr;
+	DWORD64 nDataLength;
+	DWORD64 fnLdrGetProcAddr;
+	DWORD64 fnNtAllocVirtualMem;
+	DWORD64 fnLdrLoadDll;
+	DWORD64 fnRtlInitAnsiString;
+	DWORD64 fnRtlAnsiStriToUniStr;
+	DWORD64 fnRtlFreeUniStr;
 };
 
 //打开DEBUG调试权限，有用到
@@ -59,7 +59,7 @@ DWORD_PTR WINAPI MemLoadLibrary(PARAMX *X);
 BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 
 #ifndef _WIN64
-//该函数没有任何效果
+//该函数没有任何效果，加载32位DLL会失败，加载64位DLL会崩溃
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
 //Run-Time Check Failure #0，The value of ESP was not properly saved
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
@@ -69,6 +69,7 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
 //不支持，直接失败
+BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 //64位下编译，它能将64位的控制台DLL，注入到64位EXE中，并且运行成功
 //	将64位的MFC的DLL，注入到64位EXE中，会导致EXE崩溃（无法处理）
