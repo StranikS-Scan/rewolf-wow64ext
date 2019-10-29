@@ -65,25 +65,11 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64, &CmfcAppDlg::OnBnClickedBtnInjectDll64)
 END_MESSAGE_MAP()
 
-#ifdef _DEBUG
-#include <conio.h>
-void InitConsoleWindow()
-{
-	AllocConsole();
-	_cprintf("_cprintf()\r\n");
-}
-#endif
-
 // CmfcAppDlg 消息处理程序
 BOOL CmfcAppDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-
-#ifdef _DEBUG
-	InitConsoleWindow();  // add
-#endif
 	// 将“关于...”菜单项添加到系统菜单中。
-
 	// IDM_ABOUTBOX 必须在系统命令范围内。
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
