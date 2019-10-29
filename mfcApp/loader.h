@@ -67,7 +67,7 @@ BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
 //	declared with one calling convention with a function pointer declared
 //	with a different calling convention.
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
-//该函数没有任何效果
+//该函数没有任何效果 //0xC0000005 Access Violation权限错误。
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 //该函数没有任何效果 //0xC0000005 Access Violation权限错误。
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);

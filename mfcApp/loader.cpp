@@ -170,28 +170,37 @@ unsigned char ShellCodeX64[] = {//这段代码很长，无法看明白，恐怕�
 
 BOOL EnableDebugPrivilege()
 {
-	HANDLE hToken;
-	BOOL fOk = FALSE;
-	if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
+	HANDLE hToken = 0;
+	if (!OpenProcessToken(GetCurrentProcess(),
+		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken))
 	{
-		TOKEN_PRIVILEGES tp;
-		tp.PrivilegeCount = 1;
-		if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &tp.Privileges[0].Luid))
+		if (GetLastError() == ERROR_CALL_NOT_IMPLEMENTED)
 		{
-			return FALSE;
+			return TRUE;
 		}
-		tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-		if (!AdjustTokenPrivileges(hToken, FALSE, &tp, sizeof(tp), NULL, NULL))
-		{
-			return FALSE;
-		}
-		else
-		{
-			fOk = TRUE;
-		}
-		CloseHandle(hToken);
+		return FALSE;
 	}
-	return fOk;
+	LUID luid = { 0 };
+	if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &luid))
+	{
+		CloseHandle(hToken);
+		return FALSE;
+	}
+	TOKEN_PRIVILEGES tp = { 0 };
+	TOKEN_PRIVILEGES oldtp = { 0 };
+	DWORD dwSize = sizeof(oldtp);
+	ZeroMemory(&tp, sizeof(tp));
+	tp.PrivilegeCount = 1;
+	tp.Privileges[0].Luid = luid;
+	tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+	if (!AdjustTokenPrivileges(hToken, FALSE, &tp, 
+		sizeof(tp), &oldtp, &dwSize))
+	{ /* Adjust Token Privileges */
+		CloseHandle(hToken);
+		return FALSE;
+	}
+	CloseHandle(hToken);
+	return TRUE;
 }
 
 DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
@@ -592,7 +601,6 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 
 	//开始远程注入
 	DWORD shellCodeSize = sizeof(ShellCodeX64);
-	VOID* pShellCode = ShellCodeX64;
 	BOOL bRet = EnableDebugPrivilege();
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, TRUE, processId);
 	if (hProcess == NULL) return FALSE;
@@ -608,6 +616,7 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 	}
 
 	SIZE_T dWrited = 0;
+	VOID* pShellCode = ShellCodeX64;
 	param.lpFileData = pAddress;//修成下DLL数据的地址
 	bRet = WriteProcessMemory64(hProcess, pAddress,
 		data, dataSize, &dWrited);//DLL数据写入到目标
@@ -624,6 +633,7 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId)
 		(DWORD64)hProcess, (DWORD64)(pAddress + dataSize),
 		(DWORD64)(pAddress + dataSize + shellCodeSize),
 		FALSE, 0, 0, 0, NULL);
+	//dwRet = 0xC0000005 Access Violation权限错误。
 	if (INVALID_HANDLE_VALUE != hProcess) CloseHandle(hProcess);
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
 	return (INVALID_HANDLE_VALUE != hThread);
