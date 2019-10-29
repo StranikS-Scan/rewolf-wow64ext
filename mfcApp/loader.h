@@ -54,11 +54,10 @@ BOOL EnableDebugPrivilege();
 
 DWORD_PTR WINAPI MemLoadLibrary(PARAMX *X);
 BOOL SaveShellCode(DWORD size); //没有用到
-BOOL LoadLocalDll(LPCSTR dllName); //加载文件
 BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 
 #ifdef _WIN64
-BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
+BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
 //该函数没有任何效果
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
@@ -67,7 +66,7 @@ BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 //Run-Time Check Failure #0，The value of ESP was not properly saved
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
 //该函数没有任何效果
-BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId);
+BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #endif
 
 

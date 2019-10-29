@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "loader.h"
 #ifndef _WIN64
-#include "../src/wow64ext.h"
-#pragma comment(lib, "../src/Debug/wow64ext.lib")
+#include "../wow64ext/wow64ext.h"
+#pragma comment(lib, "../wow64ext/Debug/wow64ext.lib")
 #endif
 
 unsigned char ShellCodeX64[] = {
@@ -220,8 +220,8 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 	int i = 0;
 
 	//检查数据有效性，并初始化
-	/*********************CheckDataValide**************************************/
-	//	PIMAGE_DOS_HEADER pDosHeader;
+	/*********************CheckDataValid**************************************/
+	//PIMAGE_DOS_HEADER pDosHeader;
 	//检查长度
 	if (DataLength > sizeof(IMAGE_DOS_HEADER))
 	{
@@ -259,7 +259,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		/**********************************************************************/
 		nAlign = pNTHeader->OptionalHeader.SectionAlignment; //段对齐字节数
 		//ImageSize = pNTHeader->OptionalHeader.SizeOfImage;
-		//// 计算所有头的尺寸。包括dos, coff, pe头 和 段表的大小
+		//	计算所有头的尺寸。包括dos, coff, pe头 和 段表的大小
 		ImageSize = (pNTHeader->OptionalHeader.SizeOfHeaders 
 			+ nAlign - 1) / nAlign * nAlign;
 		// 计算所有节的大小
@@ -318,9 +318,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		if (pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress > 0
 			&& pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].Size>0)
 		{
-
 			DWORDX Delta = (DWORDX)pMemoryAddress - pNTHeader->OptionalHeader.ImageBase;
-			DWORDX * pAddress;
 			//注意重定位表的位置可能和硬盘文件中的偏移地址不同，应该使用加载后的地址
 			PIMAGE_BASE_RELOCATION pLoc = (PIMAGE_BASE_RELOCATION)((DWORDX)pMemoryAddress
 				+ pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_BASERELOC].VirtualAddress);
@@ -340,7 +338,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 						// 因此 pAddress = 基地址 + 0×113E
 						// 里面的内容是 A1 ( 0c d4 02 10) 汇编代码是： mov eax , [1002d40c]
 						// 需要修正1002d40c这个地址
-						pAddress = (DWORDX *)((DWORDX)pMemoryAddress 
+						DWORDX* pAddress = (DWORDX *)((DWORDX)pMemoryAddress
 							+ pLoc->VirtualAddress + (pLocData[i] & 0x0FFF));
 						*pAddress += Delta;
 					}
@@ -362,7 +360,6 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		{
 			PIMAGE_THUNK_DATA pRealIAT = (PIMAGE_THUNK_DATA)((DWORDX)pMemoryAddress + pID->FirstThunk);
 			PIMAGE_THUNK_DATA pOriginalIAT = (PIMAGE_THUNK_DATA)((DWORDX)pMemoryAddress + pID->FirstThunk);
-			//PIMAGE_THUNK_DATA pOriginalIAT = (PIMAGE_THUNK_DATA)((DWORDX)pMemoryAddress + pID->OriginalFirstThunk);
 			//获取dll的名字
 			char* pName = (char*)((DWORDX)pMemoryAddress + pID->Name);
 			HANDLE hDll = 0;
@@ -376,7 +373,8 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 
 			//获取DLL中每个导出函数的地址，填入IAT
 			//每个IAT结构是 ：
-			// union { PBYTE ForwarderString;
+			// union { 
+			// PBYTE ForwarderString;
 			// PDWORDX Function;
 			// DWORDX Ordinal;
 			// PIMAGE_IMPORT_BY_NAME AddressOfData;
@@ -390,7 +388,8 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 				{ //这里的值给出的是导出序号
 					if (IMAGE_ORDINAL(pOriginalIAT[i].u1.Ordinal))
 					{
-						LdrGetProcAddr(hDll, NULL, IMAGE_ORDINAL(pOriginalIAT[i].u1.Ordinal), &lpFunction);
+						LdrGetProcAddr(hDll, NULL,
+							IMAGE_ORDINAL(pOriginalIAT[i].u1.Ordinal), &lpFunction);
 					}
 				}
 				else//按照名字导入
@@ -404,23 +403,24 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 						LdrGetProcAddr(hDll, &ansiStr, 0, &lpFunction);
 					}
 				}
-
 				//标记***********
 				if (lpFunction != NULL) //找到了！
 					pRealIAT[i].u1.Function = (DWORDX)lpFunction;
 				else
 					goto CODEEXIT;
 			}
-
 			//move to next
-			pID = (PIMAGE_IMPORT_DESCRIPTOR)((DWORDX)pID + sizeof(IMAGE_IMPORT_DESCRIPTOR));
+			pID = (PIMAGE_IMPORT_DESCRIPTOR)((DWORDX)pID 
+				+ sizeof(IMAGE_IMPORT_DESCRIPTOR));
 		}
 
 		/***********************************************************/
 		//修正基地址
 		pNTHeader->OptionalHeader.ImageBase = (DWORDX)pMemoryAddress;
-		//NtProtectVirtualMemory((HANDLE)-1, &pMemoryAddress, (PSIZE_T)&ImageSize, PAGE_EXECUTE_READ, &oldProtect);
-		pDllMain = (ProcDllMain)(pNTHeader->OptionalHeader.AddressOfEntryPoint + (DWORDX)pMemoryAddress);
+		//NtProtectVirtualMemory((HANDLE)-1, &pMemoryAddress, 
+		//	(PSIZE_T)&ImageSize, PAGE_EXECUTE_READ, &oldProtect);
+		pDllMain = (ProcDllMain)(pNTHeader->OptionalHeader.AddressOfEntryPoint
+			+ (DWORDX)pMemoryAddress);
 		//这里的参数1本来应该传的是(HMODULE)pMemoryAddress,但是没必要,
 		//因为无法使用资源,所以没必要,要使用资源,论坛有其他人说过如何使用
 		pDllMain(0, DLL_PROCESS_ATTACH, pMemoryAddress);
@@ -443,70 +443,27 @@ BOOL SaveShellCode(DWORD size)
 	return FALSE;
 }
 
-BOOL LoadLocalDll(LPCSTR dllName)
-{
-	HANDLE hFile = CreateFileA(dllName, GENERIC_READ,
-		FILE_SHARE_READ, NULL, OPEN_EXISTING, NULL, NULL);
-	if (!hFile) return FALSE;
-	DWORD fileSize = GetFileSize(hFile, NULL);
-	DWORD dwReadSize = 0;
-	VOID *pBuffer = malloc(fileSize);
-	if (!pBuffer) return FALSE;
-	BOOL bRet = ReadFile(hFile, pBuffer, fileSize, &dwReadSize, NULL);
-	if (!bRet || fileSize != dwReadSize)
-	{
-		free(pBuffer);
-		return FALSE;
-	}
-	HMODULE hNTDLL = GetModuleHandleA("ntdll");
-	if(!hNTDLL)
-	{
-		free(pBuffer);
-		return FALSE;
-	}
-	PARAMX param;
-	RtlZeroMemory(&param, sizeof(PARAMX));
-	param.lpFileData = pBuffer;
-	param.DataLength = fileSize;
-	param.LdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
-		"LdrGetProcedureAddress");
-	param.dwNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
-		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
-	param.RtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
-		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
-		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
-		"RtlFreeUnicodeString");
-	PVOID pModule = (PVOID)MemLoadLibrary(&param);
-	CloseHandle(hFile);
-	DeleteFileA(dllName);
-	if (pBuffer) free(pBuffer);
-	return TRUE;
-}
-
 BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 {
 	HMODULE hNTDLL = GetModuleHandleA("ntdll");
 	if (!hNTDLL) return FALSE;
-	PARAMX param;
-	RtlZeroMemory(&param, sizeof(PARAMX));
-	param.lpFileData = data;
-	param.DataLength = dataSize;
-	param.LdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
-		"LdrGetProcedureAddress");
-	param.dwNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
-		"NtAllocateVirtualMemory");
-	param.pLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
-	param.RtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
-		"RtlInitAnsiString");
-	param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
-		"RtlAnsiStringToUnicodeString");
-	param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
-		"RtlFreeUnicodeString");
 	try
 	{
+		PARAMX param;
+		RtlZeroMemory(&param, sizeof(PARAMX));
+		param.lpFileData = data;
+		param.DataLength = dataSize;
+		param.LdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
+			"LdrGetProcedureAddress");
+		param.dwNtAllocVirtualMem = (NtAllocVirtualMemT)GetProcAddress(hNTDLL,
+			"NtAllocateVirtualMemory");
+		param.pLdrLoadDll = (LdrLoadDllT)GetProcAddress(hNTDLL, "LdrLoadDll");
+		param.RtlInitAnsiString = (RtlInitAnsiStrT)GetProcAddress(hNTDLL,
+			"RtlInitAnsiString");
+		param.RtlAnsiStriToUniStr = (RtlAnsiStrToUniStrT)GetProcAddress(hNTDLL,
+			"RtlAnsiStringToUnicodeString");
+		param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
+			"RtlFreeUnicodeString");
 		PVOID pModule = (PVOID)MemLoadLibrary(&param);
 		return TRUE;
 	}
@@ -517,7 +474,7 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 }
 
 #ifdef _WIN64
-BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
+BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 {
 	SIZE_T dWrited = 0;
 	HMODULE hNTDLL = NULL;
@@ -751,7 +708,7 @@ BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
 }
 #endif
 
-BOOL LoadRemoteDataX64ByX64(LPVOID data, DWORD dataSize, DWORD processId)
+BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 {//该函数没有任何效果
 	PARAMX64 param;
 	RtlZeroMemory(&param, sizeof(PARAMX64));

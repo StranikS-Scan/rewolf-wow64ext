@@ -7,7 +7,6 @@
 #define IDS_ABOUTBOX                    101
 #define IDD_MFCAPP_DIALOG               102
 #define IDR_MAINFRAME                   128
-#define IDC_BUTTON1                     1000
 #define IDC_BTN_OPEN_FILE               1000
 #define IDC_EDIT1                       1001
 #define IDC_BTN_CREATE_DIR              1002
@@ -27,6 +26,7 @@
 #define IDC_BTN_LOAD_DLL2               1016
 #define IDC_BTN_INJECT_DLL64            1017
 #define IDC_BTN_START_EXE2              1018
+#define IDC_BTN_LOAD_DLL3               1019
 
 // Next default values for new objects
 // 

@@ -32,22 +32,8 @@ protected:
 public:
 	string getFileName();
 	afx_msg void OnBnClickedBtnOpenFile();
-	afx_msg void OnBnClickedBtnCreateDir();
-	afx_msg void OnBnClickedBtnDelDir();
-	afx_msg void OnBnClickedBtnGetIp();
-	afx_msg void OnBnClickedBtnDownload();
-	afx_msg void OnBnClickedBtnDownload2();
-	afx_msg void OnBnClickedBtnUnzip();
-	afx_msg void OnBnClickedBtnGetCfg();
-	afx_msg void OnBnClickedBtnGetMd5();
-	afx_msg void OnBnClickedBtnStartExe();
-	afx_msg void OnBnClickedBtnRunExe();
 	afx_msg void OnBnClickedBtnLoadLib();
 	afx_msg void OnBnClickedBtnLoadDll();
-	afx_msg void OnBnClickedBtnGetSysDir();
-	afx_msg void OnBnClickedBtnFile2array();
-	afx_msg void OnBnClickedBtnRemoveExe();
-	afx_msg void OnBnClickedBtnStartExe2();
 	afx_msg void OnBnClickedBtnLoadDll2();
 	afx_msg void OnBnClickedBtnInjectDll64();
 };

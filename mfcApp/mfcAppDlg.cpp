@@ -1,5 +1,4 @@
-﻿
-// mfcAppDlg.cpp: 实现文件
+﻿// mfcAppDlg.cpp: 实现文件
 #include "pch.h"
 #include "framework.h"
 #include "mfcApp.h"
@@ -60,11 +59,8 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_BN_CLICKED(IDC_BTN_OPEN_FILE, &CmfcAppDlg::OnBnClickedBtnOpenFile)
-	ON_BN_CLICKED(IDC_BTN_RUN_EXE, &CmfcAppDlg::OnBnClickedBtnRunExe)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL, &CmfcAppDlg::OnBnClickedBtnLoadDll)
 	ON_BN_CLICKED(IDC_BTN_LOAD_LIB, &CmfcAppDlg::OnBnClickedBtnLoadLib)
-	ON_BN_CLICKED(IDC_BTN_START_EXE, &CmfcAppDlg::OnBnClickedBtnStartExe)
-	ON_BN_CLICKED(IDC_BTN_START_EXE2, &CmfcAppDlg::OnBnClickedBtnStartExe2)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL2, &CmfcAppDlg::OnBnClickedBtnLoadDll2)
 	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64, &CmfcAppDlg::OnBnClickedBtnInjectDll64)
 END_MESSAGE_MAP()
@@ -140,9 +136,8 @@ void CmfcAppDlg::OnPaint()
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // 用于绘制的设备上下文
-
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-
+		SendMessage(WM_ICONERASEBKGND,
+			reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 		// 使图标在工作区矩形中居中
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
@@ -150,7 +145,6 @@ void CmfcAppDlg::OnPaint()
 		GetClientRect(&rect);
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
-
 		// 绘制图标
 		dc.DrawIcon(x, y, m_hIcon);
 	}
@@ -221,60 +215,6 @@ void CmfcAppDlg::OnBnClickedBtnLoadLib()
 	}
 }
 
-void CmfcAppDlg::OnBnClickedBtnStartExe()
-{//cmd /c start *.exe
-	string fileName = getFileName();
-	//m_bRet = runExeFromFile(fileName);
-	if (m_bRet > 0)
-	{
-		::MessageBoxA(NULL, "成功", "运行EXE", MB_OK);
-	}
-	else
-	{
-		CString str;
-		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
-		::MessageBox(NULL, str.GetString(), TEXT("运行EXE"), MB_OK);
-	}
-}
-
-void CmfcAppDlg::OnBnClickedBtnStartExe2()
-{//CreateProcessA *.exe
-	string fileName = getFileName();
-	//m_bRet = runExeFromFile2(fileName);
-	if (m_bRet > 0)
-	{
-		::MessageBoxA(NULL, "成功", "运行EXE2", MB_OK);
-	}
-	else
-	{
-		CString str;
-		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
-		::MessageBox(NULL, str.GetString(), TEXT("运行EXE2"), MB_OK);
-	}
-}
-
-void CmfcAppDlg::OnBnClickedBtnRunExe()
-{
-	char* buf = NULL;
-	string fileName = getFileName();
-	//int len = readFile(fileName, buf);
-	//DWORD m_bRet = runExeFromMem(buf, len);
-	if(m_bRet == 0)
-	{
-		::MessageBoxA(NULL, "成功", "内存运行EXE", MB_OK);
-	}
-	else 
-	{
-		CString str;
-		str.Format(TEXT("失败 ErrorID:%d"), m_bRet);
-		::MessageBox(NULL, str.GetString(), TEXT("内存运行EXE"), MB_OK);
-	}
-	if (buf != NULL) 
-	{
-		delete[]buf;
-	}
-}
-
 void CmfcAppDlg::OnBnClickedBtnLoadDll()
 {//regsvr32 /s *.dll
 	string fileName = getFileName();
@@ -297,9 +237,7 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 	char* buf = NULL;
 	string fileName = getFileName();
 	int len = readFile(fileName, buf);
-	//m_bRet = LoadLocalDll(fileName.c_str());
-	//m_bRet = LoadLocalData(buf, len);
-	m_bRet = LoadLocalData32By64(buf, len);
+	m_bRet = LoadLocalData(buf, len);
 	if (m_bRet > 0)
 	{
 		::MessageBoxA(NULL, "成功", "加载DLL", MB_OK);
@@ -324,7 +262,7 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 	CString str;
 	GetDlgItemText(IDC_EDIT_PROC_ID, str);
 	DWORD pid = _ttoi(str);
-	//m_bRet = LoadRemoteDataX64ByX64(buf, len, pid);//无效
+	//m_bRet = LoadRemoteData64By64(buf, len, pid);//无效
 	//m_bRet = LoadRemoteData32By64(buf, len, pid);//无效
 	m_bRet = LoadRemoteData32By32(buf, len, pid); //报错32位能弹
 	if (m_bRet > 0)

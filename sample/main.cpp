@@ -1,9 +1,8 @@
 #include <Windows.h>
 #include <cstdio>
 //#include <winternl.h>
-#include "../src/wow64ext.h"
-
-#pragma comment(lib, "../src/Debug/wow64ext.lib")
+#include "../wow64ext/wow64ext.h"
+#pragma comment(lib, "../wow64ext/Debug/wow64ext.lib")
 
 #define FNFAIL(a) printf(a " failed\n")
 
