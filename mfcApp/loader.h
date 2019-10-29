@@ -61,11 +61,15 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 #ifndef _WIN64
 //该函数没有任何效果，加载32位DLL会失败，加载64位DLL会崩溃
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
-//Run-Time Check Failure #0，The value of ESP was not properly saved
+//会报如下的异常错误，但继续执行时，却能将32位的DLL加载起来
+//Run-Time Check Failure #0 - The value of ESP was not properly saved 
+//	across a function call.  This is usually a result of calling a function
+//	declared with one calling convention with a function pointer declared
+//	with a different calling convention.
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
 //该函数没有任何效果
 BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
-//该函数没有任何效果
+//该函数没有任何效果 //0xC0000005 Access Violation权限错误。
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
 //不支持，直接失败

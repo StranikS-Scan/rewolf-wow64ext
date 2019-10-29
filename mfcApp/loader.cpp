@@ -4,7 +4,7 @@
 #include "../wow64ext/wow64ext.h"
 #pragma comment(lib, "../wow64ext/Debug/wow64ext.lib")
 
-unsigned char ShellCodeX32[] = {
+unsigned char ShellCodeX32[] = {//这段代码很长，无法看明白，恐怕不能放心使用
 	0x55, 0x8B, 0xEC, 0x81, 0xEC, 0xB0, 0x00, 0x00, 0x00, 0x8B, 0x45, 0x08, 0x8B, 0x08, 0x89, 0x4D,
 	0xCC, 0x8B, 0x55, 0x08, 0x8B, 0x42, 0x04, 0x89, 0x45, 0xC0, 0x8B, 0x4D, 0x08, 0x8B, 0x51, 0x08,
 	0x89, 0x55, 0xA0, 0x8B, 0x45, 0x08, 0x8B, 0x48, 0x0C, 0x89, 0x8D, 0x64, 0xFF, 0xFF, 0xFF, 0x8B,
@@ -104,7 +104,7 @@ unsigned char ShellCodeX32[] = {
 	0x04, 0x00
 };
 #endif
-unsigned char ShellCodeX64[] = {
+unsigned char ShellCodeX64[] = {//这段代码很长，无法看明白，恐怕不能放心使用
 	0x40, 0x55, 0x53, 0x56, 0x57, 0x41, 0x54, 0x41, 0x55, 0x41, 0x56, 0x41, 0x57, 0x48, 0x8B, 0xEC,
 	0x48, 0x83, 0xEC, 0x78, 0x48, 0x8B, 0x41, 0x30, 0x8B, 0x51, 0x08, 0x4C, 0x8B, 0x61, 0x20, 0x4C,
 	0x8B, 0x79, 0x28, 0x48, 0x8B, 0x19, 0x4C, 0x8B, 0x69, 0x10, 0x48, 0x8B, 0x71, 0x18, 0x45, 0x33,
@@ -514,13 +514,13 @@ BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize)
 
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 {
-	if (processId == 0) return FALSE;
+	if (!data || !dataSize || !processId) return FALSE;
+	if (!IsValidData(data, dataSize)) return FALSE;
 	HMODULE hNTDLL = GetModuleHandleA("ntdll.dll");
 	if (!hNTDLL) return FALSE;
 
 	PARAMX param;
 	RtlZeroMemory(&param, sizeof(PARAMX));
-	//param.lpFileData = data;
 	param.nDataLength = dataSize;
 	param.fnLdrGetProcAddr = (LdrGetProcAddrT)GetProcAddress(hNTDLL,
 		"LdrGetProcedureAddress");
@@ -542,7 +542,6 @@ BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 		return FALSE;
 	}
 	DWORD shellCodeSize = sizeof(ShellCodeX32);
-	VOID* pShellCode = ShellCodeX32;
 	//申请内存,把shellcode和DLL数据,和参数复制到目标进程
 	DWORD pAddress = (DWORD)VirtualAllocEx(hProcess, 0,
 		dataSize + shellCodeSize + sizeof(PARAMX) + 0x100,
@@ -554,6 +553,7 @@ BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 	}
 
 	SIZE_T dWrited = 0;
+	VOID* pShellCode = ShellCodeX32;
 	param.lpFileData = (PVOID)pAddress;//修成下DLL数据的地址
 	bRet = WriteProcessMemory(hProcess, (LPVOID)pAddress,
 		data, dataSize, &dWrited);//DLL数据写入到目标
@@ -565,11 +565,10 @@ BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId)
 		= (NtCreateThreadEx)GetProcAddress(hNTDLL, "NtCreateThreadEx");
 	if (NtCreateThreadEx64 == NULL) return FALSE;
 	HANDLE hThread = INVALID_HANDLE_VALUE;
-	NTSTATUS ntRet = NtCreateThreadEx64(&hThread,
-		(DWORD)THREAD_ALL_ACCESS, NULL, hProcess,
-		(LPTHREAD_START_ROUTINE)(pAddress + dataSize),
+	NTSTATUS ntRet = NtCreateThreadEx64(&hThread, (DWORD64)THREAD_ALL_ACCESS,
+		NULL, hProcess,	(LPTHREAD_START_ROUTINE)(pAddress + dataSize),
 		(LPVOID)(pAddress + dataSize + shellCodeSize),
-		0, 0, 0, 0, 0);
+		FALSE, 0, 0, 0, NULL);
 	if (INVALID_HANDLE_VALUE != hProcess) CloseHandle(hProcess);
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
 	return (ntRet >= 0);
@@ -636,6 +635,8 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 	RtlZeroMemory(&param, sizeof(PARAMX64));
 	param.nDataLength = dataSize;
 	param.fnLdrGetProcAddr = getLdrGetProcedureAddress();
+	/*param.fnLdrGetProcAddr = GetProcAddress64(getNTDLL64(),
+		"LdrGetProcedureAddress");*/
 	param.fnNtAllocVirtualMem = GetProcAddress64(getNTDLL64(),
 		"NtAllocateVirtualMemory");
 	param.fnLdrLoadDll = GetProcAddress64(getNTDLL64(), "LdrLoadDll");
@@ -680,6 +681,7 @@ BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId)
 		(DWORD64)hProcess, (DWORD64)(pAddress + dataSize),
 		(DWORD64)(pAddress + dataSize + shellCodeSize),
 		FALSE, 0, 0, 0, NULL);
+	//dwRet = 0xC0000005 Access Violation权限错误。
 	if (INVALID_HANDLE_VALUE != hProcess) CloseHandle(hProcess);
 	if (INVALID_HANDLE_VALUE != hThread) CloseHandle(hThread);
 	return (INVALID_HANDLE_VALUE != hThread);
