@@ -35,6 +35,7 @@ public:
 	afx_msg void OnBnClickedBtnLoadLib();
 	afx_msg void OnBnClickedBtnLoadDll();
 	afx_msg void OnBnClickedBtnLoadDll2();
-	afx_msg void OnBnClickedBtnInjectDll64();
+	afx_msg void OnBnClickedBtnInjectDll64t64();
 	afx_msg void OnBnClickedBtnLoadDll3();
+	afx_msg void OnBnClickedBtnInjectDll32t64();
 };

@@ -62,8 +62,9 @@ BEGIN_MESSAGE_MAP(CmfcAppDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL, &CmfcAppDlg::OnBnClickedBtnLoadDll)
 	ON_BN_CLICKED(IDC_BTN_LOAD_LIB, &CmfcAppDlg::OnBnClickedBtnLoadLib)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL2, &CmfcAppDlg::OnBnClickedBtnLoadDll2)
-	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64, &CmfcAppDlg::OnBnClickedBtnInjectDll64)
+	ON_BN_CLICKED(IDC_BTN_INJECT_DLL64T64, &CmfcAppDlg::OnBnClickedBtnInjectDll64t64)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DLL3, &CmfcAppDlg::OnBnClickedBtnLoadDll3)
+	ON_BN_CLICKED(IDC_BTN_INJECT_DLL32T64, &CmfcAppDlg::OnBnClickedBtnInjectDll32t64)
 END_MESSAGE_MAP()
 
 // CmfcAppDlg 消息处理程序
@@ -241,7 +242,7 @@ void CmfcAppDlg::OnBnClickedBtnLoadDll2()
 	}
 }
 
-void CmfcAppDlg::OnBnClickedBtnInjectDll64()
+void CmfcAppDlg::OnBnClickedBtnInjectDll64t64()
 {//远程注入，64位注入64位
 	char* buf = NULL;
 	string fileName = getFileName();
@@ -265,6 +266,32 @@ void CmfcAppDlg::OnBnClickedBtnInjectDll64()
 		delete[]buf;
 	}
 }
+
+void CmfcAppDlg::OnBnClickedBtnInjectDll32t64()
+{
+	char* buf = NULL;
+	string fileName = getFileName();
+	int len = readFile(fileName, buf);
+	CString str;
+	GetDlgItemText(IDC_EDIT_PROC_ID, str);
+	DWORD pid = _ttoi(str);
+	m_bRet = LoadRemoteData32By64(buf, len, pid);
+	if (m_bRet > 0)
+	{
+		::MessageBoxA(NULL, "成功", "远程注入", MB_OK);
+	}
+	else
+	{
+		CString str;
+		str.Format(TEXT("失败 ErrorID:0x%x"), m_bRet);
+		::MessageBox(NULL, str.GetString(), TEXT("远程注入"), MB_OK);
+	}
+	if (buf != NULL)
+	{
+		delete[]buf;
+	}
+}
+
 
 void CmfcAppDlg::OnBnClickedBtnLoadDll3()
 {

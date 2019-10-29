@@ -53,18 +53,23 @@ struct PARAMX64
 BOOL EnableDebugPrivilege();
 
 DWORD_PTR WINAPI MemLoadLibrary(PARAMX *X);
+//32位下编译，启动32位DLL成功，包括控制台DLL和MFC的DLL
+//64位下编译，启动64位DLL成功，包括控制台DLL和MFC的DLL
+//如果编译时的位数与DLL的位数不一致，直接返回失败
 BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 
 #ifndef _WIN64
 //该函数没有任何效果
 BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
-//该函数没有任何效果
-BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 //Run-Time Check Failure #0，The value of ESP was not properly saved
 BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
 //该函数没有任何效果
+BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
+//该函数没有任何效果
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
+//不支持，直接失败
+BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
 //64位下编译，它能将64位的控制台DLL，注入到64位EXE中，并且运行成功
 //	将64位的MFC的DLL，注入到64位EXE中，会导致EXE崩溃（无法处理）
 //	将64位的控制台DLL，注入到32位EXE中，会导致EXE崩溃（直接失败）
