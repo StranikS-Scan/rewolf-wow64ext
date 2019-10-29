@@ -404,6 +404,7 @@ extern "C" __declspec(dllexport) VOID __cdecl SetLastErrorFromX64Call(DWORD64 st
 	if ((nullptr == RtlNtStatusToDosError) || (nullptr == RtlSetLastWin32Error))
 	{
 		HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+		if (nullptr == ntdll) return;
 		RtlNtStatusToDosError = (RtlNtStatusToDosError_t)GetProcAddress(ntdll, "RtlNtStatusToDosError");
 		RtlSetLastWin32Error = (RtlSetLastWin32Error_t)GetProcAddress(ntdll, "RtlSetLastWin32Error");
 	}

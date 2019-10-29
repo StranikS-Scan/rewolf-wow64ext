@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 #include <Winternl.h>
 #ifndef _WIN64
 typedef DWORD DWORDX;
@@ -6,7 +6,7 @@ typedef DWORD DWORDX;
 typedef DWORD64 DWORDX;
 #endif
 
-typedef NTSTATUS(WINAPI*_NtCreateThreadEx)(PHANDLE ThreadHandle,
+typedef NTSTATUS(WINAPI*NtCreateThreadEx)(PHANDLE ThreadHandle,
 	ACCESS_MASK DesiredAccess, LPVOID ObjectAttributes, HANDLE ProcessHandle,
 	LPTHREAD_START_ROUTINE lpStartAddress, LPVOID lpParameter, 
 	BOOL CreateSuspended, DWORD64 dwStackSize, 
@@ -49,94 +49,29 @@ struct PARAMX64
 	DWORD64 RtlFreeUniStr;
 };
 
-//��DEBUG����Ȩ�ޣ����õ�
+//打开DEBUG调试权限，有用到
 BOOL EnableDebugPrivilege();
 
 DWORD_PTR WINAPI MemLoadLibrary(PARAMX *X);
 BOOL LoadLocalData(LPVOID data, DWORD dataSize);
 
-#ifdef _WIN64
+#ifndef _WIN64
+//该函数没有任何效果
+BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
+//该函数没有任何效果
+BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
+//Run-Time Check Failure #0，The value of ESP was not properly saved
+BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
+//该函数没有任何效果
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #else
-//�ú���û���κ�Ч��
-BOOL LoadLocalData32By64(LPVOID data, DWORD dataSize);
-//�ú���û���κ�Ч��
-BOOL LoadRemoteData32By64(LPVOID data, DWORD dataSize, DWORD processId);
-//Run-Time Check Failure #0��The value of ESP was not properly saved
-BOOL LoadRemoteData32By32(LPVOID data, DWORD dataSize, DWORD processId);
-//�ú���û���κ�Ч��
+//64位下编译，它能将64位的控制台DLL，注入到64位EXE中，并且运行成功
+//	将64位的MFC的DLL，注入到64位EXE中，会导致EXE崩溃（无法处理）
+//	将64位的控制台DLL，注入到32位EXE中，会导致EXE崩溃（直接失败）
+//	将32位的控制台DLL，注入到32位EXE中，会导致EXE崩溃（直接失败）
+//	将32位的控制台DLL，注入到64位EXE中，提示成功但没效果（直接失败）
 BOOL LoadRemoteData64By64(LPVOID data, DWORD dataSize, DWORD processId);
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+BOOL IsValidData(LPVOID data, DWORD dataSize);
+BOOL Is64BitProcess(HANDLE hProcess, BOOL& Is64Bit);
+BOOL Is64BitOS(BOOL& Is64Bit);
