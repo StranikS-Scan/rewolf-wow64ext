@@ -228,21 +228,21 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		pDosHeader = (PIMAGE_DOS_HEADER)lpFileData; // DOS头
 		//检查dos头的标记
 		if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-			goto CODEEXIT; //0×5A4D : MZ
+			goto CODE_EXIT; //0×5A4D : MZ
 		//检查长度
 		if ((DWORDX)DataLength < (pDosHeader->e_lfanew + sizeof(IMAGE_NT_HEADERS))) 
-			goto CODEEXIT;
+			goto CODE_EXIT;
 		//取得pe头 // PE头
 		pNTHeader = (PIMAGE_NT_HEADERS)((DWORDX)lpFileData + pDosHeader->e_lfanew); 
 		//检查pe头的合法性
 		if (pNTHeader->Signature != IMAGE_NT_SIGNATURE)
-			goto CODEEXIT; //0×00004550: PE00
+			goto CODE_EXIT; //0×00004550: PE00
 		if ((pNTHeader->FileHeader.Characteristics & IMAGE_FILE_DLL) == 0) 
-			goto CODEEXIT; //0×2000: File is a DLL
+			goto CODE_EXIT; //0×2000: File is a DLL
 		if ((pNTHeader->FileHeader.Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) == 0) 
-			goto CODEEXIT; //0×0002: 指出文件可以运行
+			goto CODE_EXIT; //0×0002: 指出文件可以运行
 		if (pNTHeader->FileHeader.SizeOfOptionalHeader != sizeof(IMAGE_OPTIONAL_HEADER))
-			goto CODEEXIT; //大小不对
+			goto CODE_EXIT; //大小不对
 		
 		//取得节表（段表）
 		pSectionHeader = (PIMAGE_SECTION_HEADER)((DWORDX)pNTHeader + sizeof(IMAGE_NT_HEADERS));
@@ -252,7 +252,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 			if ((pSectionHeader[i].PointerToRawData + pSectionHeader[i].SizeOfRawData)
 				> (DWORD)DataLength)
 			{
-				goto CODEEXIT;
+				goto CODE_EXIT;
 			}
 		}
 
@@ -275,17 +275,18 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 			if (ImageSize < SectionSize)
 				ImageSize = SectionSize; //Use the Max;
 		}
-		if (ImageSize == 0) goto CODEEXIT;
+		if (ImageSize == 0) goto CODE_EXIT;
 
 		// 分配虚拟内存
 		SIZE_T uSize = ImageSize;
 		pNtAllocVirtualMem((HANDLE)-1, &pMemoryAddress, 0, &uSize,
 			MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-		if (pMemoryAddress == NULL) goto CODEEXIT;
+		if (pMemoryAddress == NULL) goto CODE_EXIT;
 
 		// 计算需要复制的PE头+段表字节数
 		int HeaderSize = pNTHeader->OptionalHeader.SizeOfHeaders;
-		int SectionSize = pNTHeader->FileHeader.NumberOfSections * sizeof(IMAGE_SECTION_HEADER);
+		int SectionSize = pNTHeader->FileHeader.NumberOfSections
+			* sizeof(IMAGE_SECTION_HEADER);
 		int MoveSize = HeaderSize + SectionSize;
 		//复制头和段信息
 		for (i = 0; i < MoveSize; i++)
@@ -352,7 +353,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		/******************* 修正引入地址表**************/
 		DWORDX Offset = pNTHeader->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
 		if (Offset == 0)
-			goto CODEEXIT; //No Import Table
+			goto CODE_EXIT; //No Import Table
 
 		PIMAGE_IMPORT_DESCRIPTOR pID = (PIMAGE_IMPORT_DESCRIPTOR)((DWORDX)pMemoryAddress + Offset);
 		PIMAGE_IMPORT_BY_NAME pByName = NULL;
@@ -368,7 +369,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 			pLdrLoadDll(NULL, NULL, &UnicodeString, &hDll);
 			RtlFreeUniStr(&UnicodeString);
 			if (hDll == NULL) {
-				goto CODEEXIT; //NOT FOUND DLL
+				goto CODE_EXIT; //NOT FOUND DLL
 			}
 
 			//获取DLL中每个导出函数的地址，填入IAT
@@ -407,7 +408,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 				if (lpFunction != NULL) //找到了！
 					pRealIAT[i].u1.Function = (DWORDX)lpFunction;
 				else
-					goto CODEEXIT;
+					goto CODE_EXIT;
 			}
 			//move to next
 			pID = (PIMAGE_IMPORT_DESCRIPTOR)((DWORDX)pID 
@@ -425,7 +426,7 @@ DWORDX WINAPI MemLoadLibrary(PARAMX *X)//2502
 		//因为无法使用资源,所以没必要,要使用资源,论坛有其他人说过如何使用
 		pDllMain(0, DLL_PROCESS_ATTACH, pMemoryAddress);
 	}
-CODEEXIT:
+CODE_EXIT:
 	return (DWORDX)pMemoryAddress;
 }
 
@@ -465,7 +466,7 @@ BOOL LoadLocalData(LPVOID data, DWORD dataSize)
 		param.RtlFreeUniStr = (RtlFreeUniStrT)GetProcAddress(hNTDLL,
 			"RtlFreeUnicodeString");
 		PVOID pModule = (PVOID)MemLoadLibrary(&param);
-		return TRUE;
+		return (pModule != NULL);
 	}
 	catch (...)
 	{
